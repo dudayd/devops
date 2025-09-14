@@ -1,0 +1,22 @@
+name: cd
+on:
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  package-artifact:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build package (zip)
+        run: |
+          mkdir -p dist
+          zip -r dist/app.zip src README.md LICENSE .gitignore || true
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-package
+          path: dist/app.zip
