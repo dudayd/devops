@@ -1,20 +1,12 @@
-# Imagem base leve do Python
 FROM python:3.12-slim
 
-# Evita criação de .pyc e melhora logs
-ENV PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1
-
-# Diretório de trabalho no container
 WORKDIR /app
+COPY . /app
 
-# Copia só o necessário (pode ajustar depois)
-COPY . .
+# Se tiver dependências, crie um requirements.txt e descomente estas duas linhas:
+# COPY requirements.txt /app/requirements.txt
+# RUN pip install --no-cache-dir -r requirements.txt
 
-# Expõe a porta que seu app usa
-EXPOSE 8000
-
-# Comando para iniciar sua app (usa src/app.py)
 CMD ["python", "src/app.py"]
 
 .git
