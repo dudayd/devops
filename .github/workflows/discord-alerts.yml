@@ -2,15 +2,13 @@ name: Alerts to Discord
 
 on:
   push:
-    branches: ["**"]
+    branches: ["main"]
   pull_request:
     types: [closed]
 
 jobs:
   notify:
-    if: |
-      github.event_name == 'push' ||
-      (github.event_name == 'pull_request' && github.event.pull_request.merged == true && github.base_ref == 'main')
+    if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.pull_request.merged == true)
     runs-on: ubuntu-latest
 
     steps:
@@ -18,28 +16,20 @@ jobs:
         id: vars
         run: |
           if [ "${{ github.event_name }}" = "push" ]; then
-            ACTION="commit"
-            TARGET="${{ github.ref_name }}"
-            TITLE="${{ github.event.head_commit.message }}"
-            LINK="${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}"
+            echo "text=[commit] repo=${{ github.repository }} branch=${{ github.ref_name }} actor=${{ github.actor }} msg='${{ github.event.head_commit.message }}' → ${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }} | run ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" >> $GITHUB_OUTPUT
           else
-            ACTION="merge"
-            TARGET="main"
-            TITLE="${{ github.event.pull_request.title }}"
-            LINK="${{ github.event.pull_request.html_url }}"
+            echo "text=[merge] repo=${{ github.repository }} branch=main actor=${{ github.actor }} title='${{ github.event.pull_request.title }}' → ${{ github.event.pull_request.html_url }} | run ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" >> $GITHUB_OUTPUT
           fi
-          TEXT="[${ACTION}] repo=${{ github.repository }} target=${TARGET} actor=${{ github.actor }} title='${TITLE}' → ${LINK} | run ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-          echo "text=$TEXT" >> "$GITHUB_OUTPUT"
 
-      - name: Enviar para o Discord (Webhook)
+      - name: Enviar para o Discord
         env:
           WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_URL }}
           MSG: ${{ steps.vars.outputs.text }}
         run: |
-          python3 - <<'PY'
-          import json, os, urllib.request
-          payload = json.dumps({"content": os.environ["MSG"]}).encode("utf-8")
-          req = urllib.request.Request(os.environ["WEBHOOK"], data=payload, headers={"Content-Type": "application/json"})
-          with urllib.request.urlopen(req) as r:
-              print(r.read().decode())
-          PY
+          python3 - <<PY
+import json, os, urllib.request
+payload = json.dumps({"content": os.environ["MSG"]}).encode("utf-8")
+req = urllib.request.Request(os.environ["WEBHOOK"], data=payload, headers={"Content-Type": "application/json"})
+with urllib.request.urlopen(req) as r:
+    print(r.read().decode())
+PY
