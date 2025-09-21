@@ -1,0 +1,3 @@
+git add tests/test_app.py
+git commit -m "add: teste unitário para hello()"
+git push origin feature/testes
