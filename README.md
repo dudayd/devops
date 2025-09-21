@@ -10,3 +10,4 @@ Repositório para praticar Git, Branches, Pull Requests, CI/CD e Docker.
 Testando alertas do GitHub Actions para o Discord 🚀
 
 Testando o alerta no Discord (commit 2)
+Teste de alerta no Discord (commit 3)
